@@ -134,10 +134,9 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
                 adapter.getItemAt(adapterPosition).isPlaying =
                     !adapter.getItemAt(adapterPosition).isPlaying
-                viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+
                 viewModel.selectedAdapterPosition = adapterPosition
 
-                adapter.notifyDataSetChanged()
 
                 if (!isPLAYING) {
                     isPLAYING = true
@@ -154,6 +153,14 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
                                 viewModel.selectedAdapterPosition = -1
                             }
                         }
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+                            adapter.notifyDataSetChanged()
+
+                        }
+
+
                     } catch (e: IOException) {
                         Log.d(MainActivity::class.simpleName, e.message)
                     }
