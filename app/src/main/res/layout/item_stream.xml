@@ -58,6 +58,7 @@
         android:maxLines="2"
         android:textSize="12sp"
         android:ellipsize="end"
+        android:paddingLeft="10dp"
         android:textColor="@color/black"
         app:layout_constraintEnd_toStartOf="@+id/playPause"
         app:layout_constraintStart_toEndOf="@+id/image"

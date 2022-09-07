@@ -109,12 +109,18 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
 
     override fun onPlayPauseClick(adapterPosition: Int,seekBar:SeekBar) {
+
+        if(adapter.getItemAt(adapterPosition).recording.isNullOrEmpty()){
+            displayError("Invalid Data")
+            return
+        }
         if(adapterPosition != viewModel.selectedAdapterPosition &&
                 viewModel.selectedAdapterPosition != -1){
             adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
         }else{
             adapter.getItemAt(adapterPosition).isPlaying = !adapter.getItemAt(adapterPosition).isPlaying
             viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+            viewModel.selectedAdapterPosition = adapterPosition
         }
         adapter.notifyDataSetChanged()
 
@@ -138,7 +144,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
     private lateinit var runnable:Runnable
     private var handler: Handler = Handler()
     private fun initializeSeekBar(seekBar:SeekBar) {
-
+        handler = Handler()
         seekBar.max = mp!!.duration/1000
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
@@ -153,7 +159,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
             }
         })
-        var runnable = Runnable {
+        runnable = Runnable {
             seekBar.progress = mp!!.currentPosition
             handler.postDelayed(runnable, 1000)
         }

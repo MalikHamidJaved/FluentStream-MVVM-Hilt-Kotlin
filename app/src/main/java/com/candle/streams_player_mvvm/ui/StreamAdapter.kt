@@ -45,9 +45,12 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
         if(stream.isPlaying){
             holder.ivPlayPause.setImageResource(R.drawable.ic_pause)
             holder.seekBar.visibility = View.VISIBLE
+            holder.text_title.visibility = View.INVISIBLE
+
         }else{
             holder.ivPlayPause.setImageResource(R.drawable.ic_play)
             holder.seekBar.visibility = View.INVISIBLE
+            holder.text_title.visibility = View.VISIBLE
         }
         if(stream != null)
         stream.timestamp.let {
