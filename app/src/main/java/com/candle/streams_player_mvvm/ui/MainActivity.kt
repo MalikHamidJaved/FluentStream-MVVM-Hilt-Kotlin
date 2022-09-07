@@ -24,6 +24,8 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
+    private var maxSeekValue: Int = 100
+    private lateinit var mSeekBar:SeekBar
     private lateinit var dialog: ProgressDialog
     private var mp: MediaPlayer? = MediaPlayer()
     private var isPLAYING: Boolean = false
@@ -38,10 +40,14 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
         viewModel.setStateEvent(MainStateEvent.GetStreamEvents)
 
         swipeRefreshLayout.setOnRefreshListener {
+            viewModel.selectedAdapterPosition = -1
+            stopPlaying()
             viewModel.setStateEvent(MainStateEvent.GetStreamEvents)
         }
 
         et_search.doAfterTextChanged {
+            viewModel.selectedAdapterPosition = -1
+            stopPlaying()
             viewModel.filterData(et_search.text)
         }
 
@@ -84,6 +90,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
     private fun displayLoadingDialog(isLoading: Boolean) {
         if(!this::dialog.isInitialized) {
             dialog = ProgressDialog( this)
+            dialog.setTitle("Downloading Data")
         }
         if(isLoading){
             if(!dialog.isShowing){
@@ -114,26 +121,28 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             displayError("Invalid Data")
             return
         }
-        if(adapterPosition != viewModel.selectedAdapterPosition &&
-                viewModel.selectedAdapterPosition != -1){
+        if(adapterPosition != viewModel.selectedAdapterPosition
+            && viewModel.selectedAdapterPosition !=-1){
             adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
-        }else{
-            adapter.getItemAt(adapterPosition).isPlaying = !adapter.getItemAt(adapterPosition).isPlaying
-            viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
-            viewModel.selectedAdapterPosition = adapterPosition
+            stopPlaying()
         }
+
+        adapter.getItemAt(adapterPosition).isPlaying = !adapter.getItemAt(adapterPosition).isPlaying
+        viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+        viewModel.selectedAdapterPosition = adapterPosition
+
         adapter.notifyDataSetChanged()
 
         if (!isPLAYING) {
             isPLAYING = true
-             mp = MediaPlayer()
+            mp = MediaPlayer()
             try {
                 mp!!.setDataSource(AppConstants.BASE_URL + adapter.getItemAt(adapterPosition).recording)
                 mp!!.prepare()
                 mp!!.start()
                 initializeSeekBar(seekBar)
             } catch (e: IOException) {
-                Log.d(MainActivity::class.simpleName,e.message)
+                Log.d(MainActivity::class.simpleName, e.message)
             }
         } else {
             isPLAYING = false
@@ -141,15 +150,18 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
         }
     }
 
-    private lateinit var runnable:Runnable
-    private var handler: Handler = Handler()
+    private  var runnable:Runnable? = Runnable{}
+    private var handler: Handler? = Handler()
     private fun initializeSeekBar(seekBar:SeekBar) {
+        if(seekBar == null)
+            return
         handler = Handler()
-        seekBar.max = mp!!.duration/1000
+        mSeekBar = seekBar
+        seekBar.max = maxSeekValue
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 if (b) {
-                    mp!!.seekTo(i * 1000)
+                    mp!!.seekTo(i )
                 }
             }
 
@@ -160,15 +172,28 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             }
         })
         runnable = Runnable {
-            seekBar.progress = mp!!.currentPosition
-            handler.postDelayed(runnable, 1000)
+            try {
+                if(maxSeekValue >0){
+                    mSeekBar.progress = 100 - maxSeekValue
+                    maxSeekValue--
+                    handler!!.postDelayed(runnable, 100)
+                    }
+
+            }catch (e:Exception){
+
+            }
+
         }
-        handler.postDelayed(runnable, 1000)
+        handler!!.postDelayed(runnable, 100)
     }
 
     private fun stopPlaying() {
+        if(mp != null)
         mp!!.release()
         mp = null
+        isPLAYING = false
+        runnable = null
+        handler = null
     }
 
 }
