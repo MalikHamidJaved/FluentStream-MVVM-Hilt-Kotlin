@@ -10,7 +10,7 @@ import com.candle.streams_player_mvvm.util.DataState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class MainRepository
+class StreamRepository
 constructor(
     private val streamDao: StreamDao,
     private val streamApi: StreamApi,

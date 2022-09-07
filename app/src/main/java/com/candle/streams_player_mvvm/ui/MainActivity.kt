@@ -1,8 +1,11 @@
 package com.candle.streams_player_mvvm.ui
 
+import android.app.ProgressDialog
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +24,7 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
+    private lateinit var dialog: ProgressDialog
     private var mp: MediaPlayer? = MediaPlayer()
     private var isPLAYING: Boolean = false
     private val viewModel: MainViewModel by viewModels()
@@ -51,7 +55,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
                     populateRecyclerView(dataState.data)
                 }
                 is DataState.Loading -> {
-                    displayLoading(true)
+                        displayLoading(true)
                 }
                 is DataState.Error -> {
                     displayLoading(false)
@@ -71,7 +75,26 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
     }
 
     private fun displayLoading(isLoading: Boolean) {
-        swipeRefreshLayout.isRefreshing = isLoading
+        if(adapter.itemCount>0) {
+            swipeRefreshLayout.isRefreshing = isLoading
+        }else{
+            displayLoadingDialog(isLoading)
+        }
+    }
+    private fun displayLoadingDialog(isLoading: Boolean) {
+        if(!this::dialog.isInitialized) {
+            dialog = ProgressDialog( this)
+        }
+        if(isLoading){
+            if(!dialog.isShowing){
+                dialog.show()
+            }
+        }else{
+            if(dialog.isShowing){
+                dialog.dismiss()
+            }
+        }
+
     }
 
     private fun populateRecyclerView(streams: List<Stream>) {
@@ -84,11 +107,16 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
         blog_recyclerview.adapter = adapter
     }
 
-    override fun onStreamClicked(sentByTitle: CharSequence) {
-        Toast.makeText(this, sentByTitle, Toast.LENGTH_SHORT).show()
-    }
 
-    override fun onPlayPauseClick(adapterPosition: Int) {
+    override fun onPlayPauseClick(adapterPosition: Int,seekBar:SeekBar) {
+        if(adapterPosition != viewModel.selectedAdapterPosition &&
+                viewModel.selectedAdapterPosition != -1){
+            adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
+        }else{
+            adapter.getItemAt(adapterPosition).isPlaying = !adapter.getItemAt(adapterPosition).isPlaying
+            viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+        }
+        adapter.notifyDataSetChanged()
 
         if (!isPLAYING) {
             isPLAYING = true
@@ -97,6 +125,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
                 mp!!.setDataSource(AppConstants.BASE_URL + adapter.getItemAt(adapterPosition).recording)
                 mp!!.prepare()
                 mp!!.start()
+                initializeSeekBar(seekBar)
             } catch (e: IOException) {
                 Log.d(MainActivity::class.simpleName,e.message)
             }
@@ -104,6 +133,31 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             isPLAYING = false
             stopPlaying()
         }
+    }
+
+    private lateinit var runnable:Runnable
+    private var handler: Handler = Handler()
+    private fun initializeSeekBar(seekBar:SeekBar) {
+
+        seekBar.max = mp!!.duration/1000
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
+                if (b) {
+                    mp!!.seekTo(i * 1000)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            }
+        })
+        var runnable = Runnable {
+            seekBar.progress = mp!!.currentPosition
+            handler.postDelayed(runnable, 1000)
+        }
+        handler.postDelayed(runnable, 1000)
     }
 
     private fun stopPlaying() {

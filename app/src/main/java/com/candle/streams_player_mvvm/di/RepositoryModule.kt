@@ -4,7 +4,7 @@ import com.candle.streams_player_mvvm.database.StreamDao
 import com.candle.streams_player_mvvm.database.CacheMapper
 import com.candle.streams_player_mvvm.network.StreamApi
 import com.candle.streams_player_mvvm.network.StreamApiResponseMapper
-import com.candle.streams_player_mvvm.repository.MainRepository
+import com.candle.streams_player_mvvm.repository.StreamRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +22,7 @@ object RepositoryModule {
         streamApi: StreamApi,
         cacheMapper: CacheMapper,
         streamMapper: StreamApiResponseMapper
-    ): MainRepository {
-        return MainRepository(streamDao, streamApi, cacheMapper, streamMapper)
+    ): StreamRepository {
+        return StreamRepository(streamDao, streamApi, cacheMapper, streamMapper)
     }
 }

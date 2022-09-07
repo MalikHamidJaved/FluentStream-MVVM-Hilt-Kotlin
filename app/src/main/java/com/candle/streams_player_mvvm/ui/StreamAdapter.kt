@@ -3,6 +3,7 @@ package com.candle.streams_player_mvvm.ui
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -16,8 +17,7 @@ import kotlin.collections.ArrayList
 class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Adapter<StreamViewHolder>() {
 
     interface StreamItemListener {
-        fun onStreamClicked(blogTitle: CharSequence)
-        fun onPlayPauseClick(adapterPosition: Int)
+        fun onPlayPauseClick(adapterPosition: Int,seekbar: SeekBar)
     }
 
     private val items = ArrayList<Stream>()
@@ -40,7 +40,15 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
     override fun onBindViewHolder(holder: StreamViewHolder, position: Int) {
         stream = items[position]
         val stream = items[position]
-        holder.textTitle.text = stream.username_from
+        holder.text_title.text = stream.username_from
+
+        if(stream.isPlaying){
+            holder.ivPlayPause.setImageResource(R.drawable.ic_pause)
+            holder.seekBar.visibility = View.VISIBLE
+        }else{
+            holder.ivPlayPause.setImageResource(R.drawable.ic_play)
+            holder.seekBar.visibility = View.INVISIBLE
+        }
         if(stream != null)
         stream.timestamp.let {
             if(it != null)
@@ -57,23 +65,20 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
 }
 
 class StreamViewHolder(itemView: View, private val listener: StreamAdapter.StreamItemListener) :
-    RecyclerView.ViewHolder(itemView),
-    View.OnClickListener {
+    RecyclerView.ViewHolder(itemView) {
 
     val itemLayout: ConstraintLayout = itemView.stream_layout
-    val textTitle: TextView = itemView.text_title
+    val seekBar: SeekBar = itemView.seekbar
     val textDescription: TextView = itemView.text_description
-    val image: AppCompatImageView = itemView.image
+    val text_title: TextView = itemView.text_title
+    val ivPlayPause: AppCompatImageView = itemView.playPause
 
     init {
-        itemLayout.setOnClickListener(this)
-        itemLayout.setOnClickListener({
-            listener.onPlayPauseClick(adapterPosition)
-        })
+        itemLayout.setOnClickListener {
+            listener.onPlayPauseClick(adapterPosition, seekBar)
+        }
     }
 
-    override fun onClick(v: View?) {
-        listener.onStreamClicked(textTitle.text)
-    }
+
 }
 
