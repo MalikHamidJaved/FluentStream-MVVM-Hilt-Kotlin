@@ -17,7 +17,10 @@ import com.candle.streams_player_mvvm.util.DataState
 import com.candle.streams_player_mvvm.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import java.io.IOException
 
 
@@ -117,37 +120,48 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
     override fun onPlayPauseClick(adapterPosition: Int,seekBar:SeekBar) {
 
-        if(adapter.getItemAt(adapterPosition).recording.isNullOrEmpty()){
-            displayError("Invalid Data")
-            return
-        }
-        if(adapterPosition != viewModel.selectedAdapterPosition
-            && viewModel.selectedAdapterPosition !=-1){
-            adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
-            stopPlaying()
-        }
+        CoroutineScope(Dispatchers.Main).launch {
+            if(adapter.getItemAt(adapterPosition).recording.isNullOrEmpty()){
+                displayError("Invalid Data")
 
-        adapter.getItemAt(adapterPosition).isPlaying = !adapter.getItemAt(adapterPosition).isPlaying
-        viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
-        viewModel.selectedAdapterPosition = adapterPosition
+            }else {
+                if (adapterPosition != viewModel.selectedAdapterPosition
+                    && viewModel.selectedAdapterPosition != -1
+                ) {
+                    adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
+                    stopPlaying()
+                }
 
-        adapter.notifyDataSetChanged()
+                adapter.getItemAt(adapterPosition).isPlaying =
+                    !adapter.getItemAt(adapterPosition).isPlaying
+                viewModel.setPlayingItem(adapter.getItemAt(adapterPosition))
+                viewModel.selectedAdapterPosition = adapterPosition
 
-        if (!isPLAYING) {
-            isPLAYING = true
-            mp = MediaPlayer()
-            try {
-                mp!!.setDataSource(AppConstants.BASE_URL + adapter.getItemAt(adapterPosition).recording)
-                mp!!.prepare()
-                mp!!.start()
-                initializeSeekBar(seekBar)
-            } catch (e: IOException) {
-                Log.d(MainActivity::class.simpleName, e.message)
+                adapter.notifyDataSetChanged()
+
+                if (!isPLAYING) {
+                    isPLAYING = true
+                    mp = MediaPlayer()
+                    try {
+                        mp!!.setDataSource(AppConstants.BASE_URL + adapter.getItemAt(adapterPosition).recording)
+                        mp!!.prepare()
+                        mp!!.start()
+                        mp!!.setOnCompletionListener {
+                            stopPlaying()
+                            adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
+                            viewModel.selectedAdapterPosition = -1
+                        }
+                        initializeSeekBar(seekBar)
+                    } catch (e: IOException) {
+                        Log.d(MainActivity::class.simpleName, e.message)
+                    }
+                } else {
+                    isPLAYING = false
+                    stopPlaying()
+                }
             }
-        } else {
-            isPLAYING = false
-            stopPlaying()
         }
+
     }
 
     private  var runnable:Runnable? = Runnable{}
@@ -157,7 +171,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             return
         handler = Handler()
         mSeekBar = seekBar
-        seekBar.max = maxSeekValue
+        seekBar.max = 100
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 if (b) {
@@ -174,9 +188,10 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
         runnable = Runnable {
             try {
                 if(maxSeekValue >0){
+                    mSeekBar.max = 100
                     mSeekBar.progress = 100 - maxSeekValue
-                    maxSeekValue--
-                    handler!!.postDelayed(runnable, 100)
+                    maxSeekValue -= 4
+                    handler!!.postDelayed(runnable, 500)
                     }
 
             }catch (e:Exception){
@@ -184,7 +199,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
             }
 
         }
-        handler!!.postDelayed(runnable, 100)
+        handler!!.postDelayed(runnable, 500)
     }
 
     private fun stopPlaying() {
