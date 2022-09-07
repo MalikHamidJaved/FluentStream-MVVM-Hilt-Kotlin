@@ -151,7 +151,6 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
                             adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
                             viewModel.selectedAdapterPosition = -1
                         }
-                        initializeSeekBar(seekBar)
                     } catch (e: IOException) {
                         Log.d(MainActivity::class.simpleName, e.message)
                     }
@@ -164,51 +163,14 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
     }
 
-    private  var runnable:Runnable? = Runnable{}
-    private var handler: Handler? = Handler()
-    private fun initializeSeekBar(seekBar:SeekBar) {
-        if(seekBar == null)
-            return
-        handler = Handler()
-        mSeekBar = seekBar
-        seekBar.max = 100
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
-                if (b) {
-                    mp!!.seekTo(i )
-                }
-            }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-            }
-        })
-        runnable = Runnable {
-            try {
-                if(maxSeekValue >0){
-                    mSeekBar.max = 100
-                    mSeekBar.progress = 100 - maxSeekValue
-                    maxSeekValue -= 4
-                    handler!!.postDelayed(runnable, 500)
-                    }
-
-            }catch (e:Exception){
-
-            }
-
-        }
-        handler!!.postDelayed(runnable, 500)
-    }
 
     private fun stopPlaying() {
         if(mp != null)
         mp!!.release()
         mp = null
         isPLAYING = false
-        runnable = null
-        handler = null
+
     }
 
 }

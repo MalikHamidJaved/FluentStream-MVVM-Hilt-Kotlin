@@ -46,11 +46,18 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             holder.ivPlayPause.setImageResource(R.drawable.ic_pause)
             holder.seekBar.visibility = View.VISIBLE
             holder.text_title.visibility = View.INVISIBLE
+            try{
+                setRunable(holder)
+            }catch (e:Exception){
+
+            }
 
         }else{
+
             holder.ivPlayPause.setImageResource(R.drawable.ic_play)
             holder.seekBar.visibility = View.INVISIBLE
             holder.text_title.visibility = View.VISIBLE
+
         }
         if(stream != null)
         stream.timestamp.let {
@@ -60,7 +67,23 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             }
         }
 
+
     }
+
+    private fun setRunable(holder: StreamViewHolder) {
+        holder.seekBar.postDelayed({
+            holder.seekBar.setProgress(40,true)
+            holder.seekBar.postDelayed({
+                holder.seekBar.setProgress(( 70),true)
+                holder.seekBar.postDelayed({
+                    holder.seekBar.setProgress(80,true)
+
+                },1000)
+
+            },1000)
+        },1000)
+    }
+
 
     fun getItemAt(adapterPosition: Int): Stream {
         return items[adapterPosition]
