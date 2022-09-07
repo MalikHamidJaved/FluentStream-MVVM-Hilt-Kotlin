@@ -1,7 +1,7 @@
 package com.candle.streams_player_mvvm.ui
 
 object AppConstants {
-    val BASE_URL ="https://f8c8-125-209-108-19.in.ngrok.io"
+    val BASE_URL ="https://3340-103-255-5-23.in.ngrok.io"
 
 
 }

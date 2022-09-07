@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
     override fun onPlayPauseClick(adapterPosition: Int,seekBar:SeekBar) {
 
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             if(adapter.getItemAt(adapterPosition).recording.isNullOrEmpty()){
                 displayError("Invalid Data")
 
@@ -147,16 +147,21 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
                         mp!!.prepare()
                         mp!!.start()
                         mp!!.setOnCompletionListener {
-                            stopPlaying()
-                            adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying = false
-                            viewModel.selectedAdapterPosition = -1
+                            CoroutineScope(Dispatchers.Main).launch {
+                                stopPlaying()
+                                adapter.getItemAt(viewModel.selectedAdapterPosition).isPlaying =
+                                    false
+                                viewModel.selectedAdapterPosition = -1
+                            }
                         }
                     } catch (e: IOException) {
                         Log.d(MainActivity::class.simpleName, e.message)
                     }
                 } else {
-                    isPLAYING = false
-                    stopPlaying()
+                    CoroutineScope(Dispatchers.Main).launch {
+                        isPLAYING = false
+                        stopPlaying()
+                    }
                 }
             }
         }

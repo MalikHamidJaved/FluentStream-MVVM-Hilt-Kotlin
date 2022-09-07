@@ -47,7 +47,17 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             holder.seekBar.visibility = View.VISIBLE
             holder.text_title.visibility = View.INVISIBLE
             try{
-                setRunable(holder)
+                holder.seekBar.postDelayed({
+                    holder.seekBar.setProgress(40,true)
+                    holder.seekBar.postDelayed({
+                        holder.seekBar.setProgress(( 70),true)
+                        holder.seekBar.postDelayed({
+                            holder.seekBar.setProgress(80,true)
+
+                        },2000)
+
+                    },2000)
+                },1000)
             }catch (e:Exception){
 
             }
@@ -70,19 +80,7 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
 
     }
 
-    private fun setRunable(holder: StreamViewHolder) {
-        holder.seekBar.postDelayed({
-            holder.seekBar.setProgress(40,true)
-            holder.seekBar.postDelayed({
-                holder.seekBar.setProgress(( 70),true)
-                holder.seekBar.postDelayed({
-                    holder.seekBar.setProgress(80,true)
 
-                },1000)
-
-            },1000)
-        },1000)
-    }
 
 
     fun getItemAt(adapterPosition: Int): Stream {
