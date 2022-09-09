@@ -3,7 +3,6 @@ package com.candle.streams_player_mvvm.ui
 import android.app.ProgressDialog
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.widget.SeekBar
 import android.widget.Toast
@@ -15,6 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.candle.streams_player_mvvm.model.Stream
 import com.candle.streams_player_mvvm.util.DataState
 import com.candle.streams_player_mvvm.R
+import com.candle.streams_player_mvvm.model.LoggedInUser
+import com.candle.streams_player_mvvm.util.PreferenceHelper
+import com.candle.streams_player_mvvm.util.PreferenceHelper.isAdmin
+import com.candle.streams_player_mvvm.util.PreferenceHelper.user
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +30,7 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
+    private lateinit var userData: LoggedInUser
     private var maxSeekValue: Int = 100
     private lateinit var mSeekBar:SeekBar
     private lateinit var dialog: ProgressDialog
@@ -40,18 +44,20 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
         setContentView(R.layout.activity_main)
         setupRecyclerView()
         subscribeObservers()
-        viewModel.setStateEvent(MainStateEvent.GetStreamEvents)
+        userData = LoggedInUser(PreferenceHelper.customPreference(this).user!!
+            ,PreferenceHelper.customPreference(this).isAdmin)
+        viewModel.setStateEvent(MainStateEvent.GetStreamEvents,userData)
 
         swipeRefreshLayout.setOnRefreshListener {
             viewModel.selectedAdapterPosition = -1
             stopPlaying()
-            viewModel.setStateEvent(MainStateEvent.GetStreamEvents)
+            viewModel.setStateEvent(MainStateEvent.GetStreamEvents,userData)
         }
 
         et_search.doAfterTextChanged {
             viewModel.selectedAdapterPosition = -1
             stopPlaying()
-            viewModel.filterData(et_search.text)
+            viewModel.filterData(et_search.text,userData)
         }
 
     }
@@ -84,11 +90,8 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
     }
 
     private fun displayLoading(isLoading: Boolean) {
-        if(adapter.itemCount>0) {
-            swipeRefreshLayout.isRefreshing = isLoading
-        }else{
+            swipeRefreshLayout.isRefreshing = false
             displayLoadingDialog(isLoading)
-        }
     }
     private fun displayLoadingDialog(isLoading: Boolean) {
         if(!this::dialog.isInitialized) {
@@ -162,11 +165,11 @@ class MainActivity : AppCompatActivity(), StreamAdapter.StreamItemListener {
 
 
                     } catch (e: IOException) {
+                        isPLAYING = false
                         Log.d(MainActivity::class.simpleName, e.message)
                     }
                 } else {
                     CoroutineScope(Dispatchers.Main).launch {
-                        isPLAYING = false
                         stopPlaying()
                     }
                 }

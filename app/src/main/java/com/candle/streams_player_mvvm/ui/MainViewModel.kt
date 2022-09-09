@@ -4,6 +4,7 @@ import android.text.Editable
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
+import com.candle.streams_player_mvvm.model.LoggedInUser
 import com.candle.streams_player_mvvm.model.Stream
 import com.candle.streams_player_mvvm.repository.StreamRepository
 import com.candle.streams_player_mvvm.util.DataState
@@ -24,11 +25,11 @@ constructor(
     val dataState: LiveData<DataState<List<Stream>>>
         get() = _dataState
 
-    fun setStateEvent(mainStateEvent: MainStateEvent) {
+    fun setStateEvent(mainStateEvent: MainStateEvent,user: LoggedInUser) {
         viewModelScope.launch {
             when (mainStateEvent) {
                 is MainStateEvent.GetStreamEvents -> {
-                    streamRepository.getStream()
+                    streamRepository.getStream(user)
                         .onEach { dataState ->
                             _dataState.value = dataState
                         }
@@ -42,9 +43,9 @@ constructor(
         }
     }
 
-    fun filterData(text: Editable?) {
+    fun filterData(text: Editable?, userData: LoggedInUser) {
         viewModelScope.launch {
-            streamRepository.getStreamFromLocal(text.toString())
+            streamRepository.getStreamFromLocal(text.toString(),userData)
                 .onEach { dataState ->
                     _dataState.value = dataState
                 }

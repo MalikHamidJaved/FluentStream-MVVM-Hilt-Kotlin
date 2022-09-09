@@ -13,6 +13,12 @@ interface StreamDao {
     @Query("SELECT * FROM stream")
     suspend fun get(): List<StreamCacheEntity>
 
-    @Query("SELECT * FROM stream where username_from like :query || '%'")
+    @Query("SELECT * FROM stream where username_from like :query || '%' or username_to like :query || '%'")
     suspend fun get(query:String): List<StreamCacheEntity>
+
+    @Query("SELECT * FROM stream where username_from = :userName or username_to = :userName ")
+    suspend fun getForFilteredUser(userName:String): List<StreamCacheEntity>
+
+    @Query("SELECT * FROM stream where (username_from = :userName or username_to = :userName ) and (username_from like :query || '%' or username_to like :query || '%')")
+    suspend fun getForFilteredUser(query:String,userName:String): List<StreamCacheEntity>
 }

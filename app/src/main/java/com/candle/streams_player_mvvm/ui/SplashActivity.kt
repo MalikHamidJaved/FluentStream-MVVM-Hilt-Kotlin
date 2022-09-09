@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import com.candle.streams_player_mvvm.R
+import com.candle.streams_player_mvvm.model.LoggedInUser
+import com.candle.streams_player_mvvm.ui.login.LoginActivity
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +24,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun callNextActivity() {
-        val intent = Intent(this,MainActivity :: class.java)
+        val intent = Intent(this,LoginActivity :: class.java)
         startActivity(intent)
         finish()
     }

@@ -40,7 +40,17 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
     override fun onBindViewHolder(holder: StreamViewHolder, position: Int) {
         stream = items[position]
         val stream = items[position]
-        holder.text_title.text = stream.username_from
+        holder.text_title.text
+
+        holder.text_title.text = if(stream.username_from.isNullOrEmpty()) {
+            "NA"
+        }else{
+            stream.username_from
+        } + " - " +  if(stream.username_to.isNullOrEmpty()) {
+            "NA"
+        }else{
+            stream.username_to
+        }
 
         if(stream.isPlaying){
             holder.ivPlayPause.setImageResource(R.drawable.ic_pause)

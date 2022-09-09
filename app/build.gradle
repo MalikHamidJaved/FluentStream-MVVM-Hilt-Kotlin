@@ -91,4 +91,7 @@ dependencies {
 
     implementation 'com.android.support:cardview-v7:27.1.1'
 
+    implementation 'androidx.preference:preference:1.1.1'
+
+
 }
