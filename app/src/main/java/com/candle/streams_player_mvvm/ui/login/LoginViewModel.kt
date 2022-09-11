@@ -28,10 +28,10 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         get() = _dataState
 
 
-    fun login(username: String, password: String) {
+    fun login(username: String) {
 
         viewModelScope.launch {
-            loginRepository.login(username, password)
+            loginRepository.login(username)
                 .onEach { dataState ->
                     _dataState.value = dataState
                 }
@@ -40,12 +40,10 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     }
 
-    fun loginDataChanged(username: String, password: String) {
+    fun loginDataChanged(username: String) {
         if (!isUserNameValid(username)) {
             _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
-        } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
-        } else {
+        }  else {
             _loginForm.value = LoginFormState(isDataValid = true)
         }
     }

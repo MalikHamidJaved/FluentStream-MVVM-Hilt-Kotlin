@@ -12,7 +12,7 @@ import kotlin.collections.HashMap
 class LoginDataSource {
 
     val dummyAdminMap = HashMap<String,String>()
-    fun login(username: String, password: String): LoggedInUser? {
+    fun login(username: String): LoggedInUser? {
         makeDummyAdmins()
         try {
 

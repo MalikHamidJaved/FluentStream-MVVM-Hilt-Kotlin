@@ -30,9 +30,9 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    suspend fun login(username: String, password: String): Flow<DataState<LoggedInUser>> = flow {
+    suspend fun login(username: String): Flow<DataState<LoggedInUser>> = flow {
         emit(DataState.Loading)
-        val result = dataSource.login(username, password)
+        val result = dataSource.login(username)
 
         if(result != null){
             setLoggedInUser(result)

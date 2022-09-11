@@ -24,6 +24,7 @@ import com.candle.streams_player_mvvm.util.PreferenceHelper
 import com.candle.streams_player_mvvm.util.PreferenceHelper.isAdmin
 import com.candle.streams_player_mvvm.util.PreferenceHelper.user
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.android.synthetic.main.activity_main.*
 
 class LoginActivity : AppCompatActivity() {
 
@@ -35,7 +36,6 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         val username = username
-        val password = password
         val login = login
         val loading = loading
 
@@ -47,16 +47,14 @@ class LoginActivity : AppCompatActivity() {
 
         username.afterTextChanged {
             loginViewModel.loginDataChanged(
-                username.text.toString(),
-                password.text.toString()
+                username.text.toString()
             )
         }
 
-        password.apply {
+        username.apply {
             afterTextChanged {
                 loginViewModel.loginDataChanged(
-                    username.text.toString(),
-                    password.text.toString()
+                    username.text.toString()
                 )
             }
 
@@ -64,8 +62,7 @@ class LoginActivity : AppCompatActivity() {
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
                         loginViewModel.login(
-                            username.text.toString(),
-                            password.text.toString()
+                            username.text.toString()
                         )
                 }
                 false
@@ -73,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+                loginViewModel.login(username.text.toString())
             }
         }
     }
@@ -89,9 +86,7 @@ class LoginActivity : AppCompatActivity() {
             if (loginState.usernameError != null) {
                 username.error = getString(loginState.usernameError)
             }
-            if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
-            }
+
         })
 
         loginViewModel.dataState.observe(this, Observer { dataState ->
@@ -140,7 +135,6 @@ class LoginActivity : AppCompatActivity() {
         val displayName = model.userId
         PreferenceHelper.customPreference(this).user = model.userId
         PreferenceHelper.customPreference(this).isAdmin = model.isAdmin
-        // TODO : initiate successful logged in experience
         Toast.makeText(
             applicationContext,
             "$welcome $displayName",

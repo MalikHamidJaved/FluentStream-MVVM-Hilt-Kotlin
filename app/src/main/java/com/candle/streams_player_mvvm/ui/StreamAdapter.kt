@@ -42,11 +42,12 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
         val stream = items[position]
         holder.text_title.text
 
-        holder.text_title.text = if(stream.username_from.isNullOrEmpty()) {
+        holder.text_title.text = "Sender: "+ if(stream.username_from.isNullOrEmpty()) {
             "NA"
         }else{
             stream.username_from
-        } + " - " +  if(stream.username_to.isNullOrEmpty()) {
+        }
+        holder.text_receiver.text = "Receiver: "+if(stream.username_to.isNullOrEmpty()) {
             "NA"
         }else{
             stream.username_to
@@ -56,6 +57,7 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             holder.ivPlayPause.setImageResource(R.drawable.ic_pause)
             holder.seekBar.visibility = View.VISIBLE
             holder.text_title.visibility = View.INVISIBLE
+            holder.text_receiver.visibility = View.INVISIBLE
             try{
                 holder.seekBar.postDelayed({
                     holder.seekBar.setProgress(40,true)
@@ -77,6 +79,7 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             holder.ivPlayPause.setImageResource(R.drawable.ic_play)
             holder.seekBar.visibility = View.INVISIBLE
             holder.text_title.visibility = View.VISIBLE
+            holder.text_receiver.visibility = View.VISIBLE
 
         }
         if(stream != null)
@@ -105,6 +108,7 @@ class StreamViewHolder(itemView: View, private val listener: StreamAdapter.Strea
     val seekBar: SeekBar = itemView.seekbar
     val textDescription: TextView = itemView.text_description
     val text_title: TextView = itemView.text_title
+    val text_receiver: TextView = itemView.text_receiver
     val ivPlayPause: AppCompatImageView = itemView.playPause
 
     init {
