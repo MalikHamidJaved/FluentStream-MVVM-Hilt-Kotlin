@@ -58,22 +58,6 @@ class StreamAdapter(private val listener: StreamItemListener) : RecyclerView.Ada
             holder.seekBar.visibility = View.VISIBLE
             holder.text_title.visibility = View.INVISIBLE
             holder.text_receiver.visibility = View.INVISIBLE
-            try{
-                holder.seekBar.postDelayed({
-                    holder.seekBar.setProgress(40,true)
-                    holder.seekBar.postDelayed({
-                        holder.seekBar.setProgress(( 70),true)
-                        holder.seekBar.postDelayed({
-                            holder.seekBar.setProgress(80,true)
-
-                        },2000)
-
-                    },2000)
-                },1000)
-            }catch (e:Exception){
-
-            }
-
         }else{
 
             holder.ivPlayPause.setImageResource(R.drawable.ic_play)
